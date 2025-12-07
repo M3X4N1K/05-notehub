@@ -1,6 +1,8 @@
-// @ts-ignore — бо react-paginate не має типів для dist
-import ReactPaginate from "react-paginate/dist/react-paginate.js";
+// @ts-ignore
+import ReactPaginateModule from "react-paginate";
 import css from "./Pagination.module.css";
+
+const ReactPaginate = ReactPaginateModule.default || ReactPaginateModule.ReactPaginate;
 
 export interface PaginationProps {
   page: number;
