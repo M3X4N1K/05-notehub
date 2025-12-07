@@ -1,6 +1,7 @@
 import axios from 'axios';
 import type { Note, NoteTag } from '../types/note';
 
+console.log('Token:', import.meta.env.VITE_NOTEHUB_TOKEN);
 const token = import.meta.env.VITE_NOTEHUB_TOKEN as string | undefined;
 
 if (!token) {
