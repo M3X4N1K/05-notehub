@@ -3,8 +3,8 @@
 
 import { useState } from 'react';
 import toast, { Toaster } from 'react-hot-toast';
-import type { Movie } from '../../types/movie';
-import { fetchMovies } from '../../services/movieService';
+import type { Movie } from '../../types/note';
+import { fetchMovies } from '../../services/noteService';
 import SearchBar from '../SearchBar/SearchBar';
 import MovieGrid from '../MovieGrid/MovieGrid';
 import Loader from '../Loader/Loader';
