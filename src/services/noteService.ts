@@ -1,19 +1,27 @@
 import axios from 'axios';
 import type { Note, NoteTag } from '../types/note';
 
+// Беремо токен із змінних оточення
 const token = import.meta.env.VITE_NOTEHUB_TOKEN as string | undefined;
 
 if (!token) {
-  throw new Error('VITE_NOTEHUB_TOKEN is missing');
+  console.warn(
+    '⚠️ VITE_NOTEHUB_TOKEN is missing. API requests will fail. ' +
+      'Set it in your .env file: VITE_NOTEHUB_TOKEN=your_token_here'
+  );
 }
 
+// Створюємо інстанс axios
 const api = axios.create({
   baseURL: 'https://notehub-public.goit.study/api',
-  headers: {
-    Authorization: `Bearer ${token}`,
-  },
+  headers: token
+    ? {
+        Authorization: `Bearer ${token}`,
+      }
+    : undefined,
 });
 
+// Типи запитів
 export interface FetchNotesParams {
   page?: number;
   perPage?: number;
@@ -35,8 +43,9 @@ export interface DeleteNoteResponse {
   note: Note;
 }
 
+// Методи API
 export async function fetchNotes(
-  params: FetchNotesParams,
+  params: FetchNotesParams
 ): Promise<FetchNotesResponse> {
   const { page = 1, perPage = 12, search } = params;
 
@@ -48,13 +57,17 @@ export async function fetchNotes(
 }
 
 export async function createNote(
-  payload: CreateNotePayload,
+  payload: CreateNotePayload
 ): Promise<Note> {
+  if (!token) throw new Error('Cannot create note: VITE_NOTEHUB_TOKEN is missing');
+
   const { data } = await api.post<Note>('/notes', payload);
   return data;
 }
 
 export async function deleteNote(id: string): Promise<DeleteNoteResponse> {
+  if (!token) throw new Error('Cannot delete note: VITE_NOTEHUB_TOKEN is missing');
+
   const { data } = await api.delete<DeleteNoteResponse>(`/notes/${id}`);
   return data;
 }
