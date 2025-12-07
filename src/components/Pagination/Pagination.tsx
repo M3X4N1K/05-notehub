@@ -1,7 +1,6 @@
-import * as RP from "react-paginate";
+// @ts-ignore — бо react-paginate не має типів для dist
+import ReactPaginate from "react-paginate/dist/react-paginate.js";
 import css from "./Pagination.module.css";
-
-const ReactPaginate = RP.default || RP.ReactPaginate;
 
 export interface PaginationProps {
   page: number;
@@ -15,9 +14,6 @@ export default function Pagination({
   onChange,
 }: PaginationProps) {
   if (totalPages <= 1) return null;
-
-  console.log("ReactPaginate typeof:", typeof ReactPaginate);
-  console.log("ReactPaginate value:", ReactPaginate);
 
   return (
     <ReactPaginate
