@@ -1,9 +1,5 @@
-// @ts-ignore
-import ReactPaginateModule from 'react-paginate';
+import ReactPaginate from 'react-paginate';
 import css from './Pagination.module.css';
-
-// Беремо компонент із модуля
-const ReactPaginate = ReactPaginateModule.default || ReactPaginateModule.ReactPaginate;
 
 export interface PaginationProps {
   page: number;
@@ -16,7 +12,7 @@ export default function Pagination({
   totalPages,
   onChange,
 }: PaginationProps) {
-  if (totalPages <= 1) return null;
+  if (totalPages <= 1) return null; 
 
   return (
     <ReactPaginate
