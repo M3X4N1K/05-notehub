@@ -1,93 +1,81 @@
-// src/components/App/App.tsx
-// Головний компонент застосунку - управління станом та логікою
-
 import { useState } from 'react';
-import toast, { Toaster } from 'react-hot-toast';
-import type { Movie } from '../../types/note';
-import { fetchMovies } from '../../services/noteService';
-import SearchBar from '../SearchBar/SearchBar';
-import MovieGrid from '../MovieGrid/MovieGrid';
+import { useQuery } from '@tanstack/react-query';
+import { useDebounce } from 'use-debounce';
+import css from './App.module.css';
+import SearchBox from '../SearchBox/SearchBox';
+import Pagination from '../Pagination/Pagination';
+import NoteList from '../NoteList/NoteList';
+import Modal from '../Modal/Modal';
+import NoteForm from '../NoteForm/NoteForm';
 import Loader from '../Loader/Loader';
 import ErrorMessage from '../ErrorMessage/ErrorMessage';
-import MovieModal from '../MovieModal/MovieModal';
-import styles from './App.module.css';
+import { fetchNotes } from '../../services/noteService';
+import type { FetchNotesResponse } from '../../services/noteService';
+
+
+const PER_PAGE = 12;
 
 export default function App() {
-  const [movies, setMovies] = useState<Movie[]>([]);
-  const [loading, setLoading] = useState<boolean>(false);
-  const [error, setError] = useState<boolean>(false);
-  const [selectedMovie, setSelectedMovie] = useState<Movie | null>(null);
+  const [page, setPage] = useState(1);
+  const [search, setSearch] = useState('');
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [debouncedSearch] = useDebounce(search, 500);
+  const { data, isLoading, isError, isFetching } =
+    useQuery<FetchNotesResponse>({
+      queryKey: ['notes', page, debouncedSearch],
+      queryFn: () =>
+        fetchNotes({
+          page,
+          perPage: PER_PAGE,
+          search: debouncedSearch || undefined,
+        }),
+    });
 
-  const handleSearch = async (query: string) => {
-    // Очищуємо попередні результати
-    setMovies([]);
-    setLoading(true);
-    setError(false);
-
-    try {
-      const results = await fetchMovies(query);
-
-      if (results.length === 0) {
-        toast.error('No movies found for your request.');
-      }
-
-      setMovies(results);
-    } catch (err) {
-      setError(true);
-      toast.error('Failed to fetch movies. Please try again.');
-      console.error('Error fetching movies:', err);
-    } finally {
-      setLoading(false);
-    }
+  const notes = data?.notes ?? [];
+  const totalPages = data?.totalPages ?? 0;
+  const handleSearchChange = (value: string) => {
+    setSearch(value);
+    setPage(1); 
   };
 
-  const handleMovieSelect = (movie: Movie) => {
-    setSelectedMovie(movie);
-  };
+  const handleOpenModal = () => setIsModalOpen(true);
+  const handleCloseModal = () => setIsModalOpen(false);
 
-  const handleCloseModal = () => {
-    setSelectedMovie(null);
-  };
+  const showList = notes.length > 0;
+  const showPagination = totalPages > 1;
 
   return (
-    <div className={styles.app}>
-      <SearchBar onSubmit={handleSearch} />
-      
-      <main className={styles.main}>
-        {loading && <Loader />}
-        {error && <ErrorMessage />}
-        {!loading && !error && movies.length > 0 && (
-          <MovieGrid movies={movies} onSelect={handleMovieSelect} />
+    <div className={css.app}>
+      <header className={css.toolbar}>
+        <SearchBox value={search} onChange={handleSearchChange} />
+
+        {showPagination && (
+          <Pagination
+            page={page}
+            totalPages={totalPages}
+            onChange={setPage}
+          />
         )}
-      </main>
 
-      {selectedMovie && (
-        <MovieModal movie={selectedMovie} onClose={handleCloseModal} />
+        <button
+          type="button"
+          className={css.button}
+          onClick={handleOpenModal}
+        >
+          Create note +
+        </button>
+      </header>
+
+      {isLoading && <Loader />}
+      {isError && <ErrorMessage />}
+      {!isLoading && !isError && showList && <NoteList notes={notes} />}
+      {isFetching && !isLoading && <Loader />}
+
+      {isModalOpen && (
+        <Modal onClose={handleCloseModal}>
+          <NoteForm onClose={handleCloseModal} />
+        </Modal>
       )}
-
-      <Toaster
-        position="top-right"
-        toastOptions={{
-          duration: 3000,
-          style: {
-            background: '#16213e',
-            color: '#fff',
-            border: '1px solid #e94560',
-          },
-          success: {
-            iconTheme: {
-              primary: '#e94560',
-              secondary: '#fff',
-            },
-          },
-          error: {
-            iconTheme: {
-              primary: '#e94560',
-              secondary: '#fff',
-            },
-          },
-        }}
-      />
     </div>
   );
 }
