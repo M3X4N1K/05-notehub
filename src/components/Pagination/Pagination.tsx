@@ -14,6 +14,10 @@ export default function Pagination({
 }: PaginationProps) {
   if (totalPages <= 1) return null;
 
+  console.log("ReactPaginate typeof:", typeof ReactPaginate);
+console.log("ReactPaginate value:", ReactPaginate);
+
+
   return (
     <ReactPaginate
       pageCount={totalPages}
