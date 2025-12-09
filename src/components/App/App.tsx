@@ -12,14 +12,15 @@ import ErrorMessage from '../ErrorMessage/ErrorMessage';
 import { fetchNotes } from '../../services/noteService';
 import type { FetchNotesResponse } from '../../services/noteService';
 
-
 const PER_PAGE = 12;
 
 export default function App() {
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
+
   const [debouncedSearch] = useDebounce(search, 500);
+
   const { data, isLoading, isError, isFetching } =
     useQuery<FetchNotesResponse>({
       queryKey: ['notes', page, debouncedSearch],
@@ -29,10 +30,12 @@ export default function App() {
           perPage: PER_PAGE,
           search: debouncedSearch || undefined,
         }),
+      placeholderData: (previousData) => previousData,
     });
 
   const notes = data?.notes ?? [];
   const totalPages = data?.totalPages ?? 0;
+
   const handleSearchChange = (value: string) => {
     setSearch(value);
     setPage(1); 
@@ -48,7 +51,6 @@ export default function App() {
     <div className={css.app}>
       <header className={css.toolbar}>
         <SearchBox value={search} onChange={handleSearchChange} />
-
         {showPagination && (
           <Pagination
             page={page}
@@ -56,7 +58,6 @@ export default function App() {
             onChange={setPage}
           />
         )}
-
         <button
           type="button"
           className={css.button}
